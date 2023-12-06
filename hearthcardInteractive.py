@@ -1,6 +1,4 @@
 import sqlite3
-import csv
-import os
 import constants as c
 
 def main():
@@ -26,13 +24,12 @@ def navigate():
 def searchCard():
     plurality = input("Would you like to search for a single card or multiple cards? (single, multiple)\n>> ")
     if plurality == "single":
-        searchSingleCard()
+        name = input("What is the name of the card? (case sensitive)\n>> ")
+        searchSingleCard(name)
     elif plurality == "multiple":
         searchMultipleCards()
 
-def searchSingleCard():
-    name = input("What is the name of the card? (case sensitive)\n>> ")
-    # name = "Argent Lance"
+def searchSingleCard(name):
     card = getCard(name)
     if card is not None:
         # get the card's values
@@ -77,7 +74,76 @@ def searchSingleCard():
             navigate()
 
 def searchMultipleCards():
-    pass
+    con = sqlite3.connect("hearthcards.db")
+    cur = con.cursor()
+
+    fields = ["cost", "attack", "health", "rarity", "class", "type", "tribe", "durability", "set", "mechanics"]
+    print("what field would you like to search by?")
+    print(fields)
+    choice = input(">> ")
+    if choice not in fields:
+        print("That is not a valid field!")
+        return
+    if choice in ["attack", "health", "cost", "durability"]:
+        print("you've chosen an integer field. what operator would you like to use? (<, >, =, <=, >=)")
+        operator = input(">> ")
+        if operator not in ["<", ">", "=", "<=", ">="]:
+            print("That is not a valid operator!")
+            return
+        value = int(input("What value would you like to search against?\n>> "))
+        #wrap value in quotes so sqlite can compare it to a string
+        value = "'" + str(value) + "'"
+        #only show those with values of 10 if the operand is >, >=, or of val is 10 itslef
+        if operator in [">", ">=", "="] or value == "'10'":
+            execString = "SELECT name FROM cards WHERE type != 'SPELL' AND " + choice + " " + operator + " " + str(value) + " ORDER BY " + choice + " ASC"
+        else:
+            execString = "SELECT name FROM cards WHERE type != 'SPELL' AND " + choice + " < '10' AND " + choice + " " + operator + " " + value + " ORDER BY " + choice + " ASC"
+    elif choice == "mechanics":
+        mechanicChoice = input("Would you like to search for a keyword of a play requirement?\n>> ")
+        if mechanicChoice == "keyword":
+            value = input("What keyword would you like to search for?\n>> ")
+            value = value.upper().replace(" ", "_")
+            execString = "SELECT name FROM cards JOIN mechanics ON cards.card_id = mechanics.card_id WHERE mechanic = '" + value + "'"
+        elif mechanicChoice == "play requirement":
+            value = input("What play requirement would you like to search for?\n>> ")
+            value = value.upper().replace(" ", "_")
+            value = "REQ_" + value
+            execString = "SELECT name FROM cards JOIN play_requirements ON cards.card_id = play_requirements.card_id WHERE play_requirement = '" + value + "'"
+
+    else:
+        value = input("What value from your chosen field would you like the results to have?\n>> ")
+        if choice in ["rarity", "class", "type", "tribe", "set"]:
+            value = value.upper()
+
+        execString = "SELECT * FROM cards WHERE " + choice + " = '" + value + "'"
+
+    cards = cur.execute(execString)
+    cards = cards.fetchall()
+    con.close()
+    if len(cards) == 0:
+        print("No cards found!")
+        return
+
+    #print card names 10 at a time, and prompt the user to see the next 10
+    i = 0
+    renderNext = True
+    while renderNext:
+        j = i+9
+        # if there are less than 10 cards left, print them all
+        if j + 1 >= len(cards):
+            for v in range(i, len(cards)):
+                print(cards[v][0])
+            renderNext = False
+            break
+        for v in range(i, j):
+            print(cards[v][0])
+        if renderNext:
+            choice = input("type n to see the next 10 cards, or type the name of a card to view it.\n>> ")
+            if choice != "n":
+                renderNext = False
+                searchSingleCard(choice)
+
+    navigate()
 
 def deleteCard(card_id):
     delete = "DELETE FROM cards WHERE card_id = '" + card_id + "'"
