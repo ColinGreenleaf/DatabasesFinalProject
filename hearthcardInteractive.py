@@ -22,6 +22,7 @@ def navigate():
     elif choice == "2":
         searchCard()
     elif choice == "3":
+        cardStats()
 
 
 
