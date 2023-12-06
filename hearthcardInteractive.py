@@ -26,52 +26,58 @@ def navigate():
 def searchCard():
     plurality = input("Would you like to search for a single card or multiple cards? (single, multiple)\n>> ")
     if plurality == "single":
-        name = input("What is the name of the card? (case sensitive)\n>> ")
-        # name = "Argent Lance"
-        card = getCard(name)
-        if card is not None:
-            # get the card's values
-            card_id = card[0]
-            cardclass = card[1]
-            cardtype = card[2]
-            name = card[3]
-            set = card[4]
-            text = card[5]
-            cost = card[6]
-            attack = card[7]
-            health = card[8]
-            rarity = card[9]
-            flavor = card[10]
-            tribe = card[11]
-            durability = card[12]
+        searchSingleCard()
+    elif plurality == "multiple":
+        searchMultipleCards()
 
-            text = text.replace("<b>", "")
-            text = text.replace("</b>", "")
+def searchSingleCard():
+    name = input("What is the name of the card? (case sensitive)\n>> ")
+    # name = "Argent Lance"
+    card = getCard(name)
+    if card is not None:
+        # get the card's values
+        card_id = card[0]
+        cardclass = card[1]
+        cardtype = card[2]
+        name = card[3]
+        set = card[4]
+        text = card[5]
+        cost = card[6]
+        attack = card[7]
+        health = card[8]
+        rarity = card[9]
+        flavor = card[10]
+        tribe = card[11]
+        durability = card[12]
 
-            if cardtype == "MINION":
-                renderMinion(cost, name, text, attack, health, tribe)
-            elif cardtype == "SPELL":
-                renderSpell(cost, name, text)
-            elif cardtype == "WEAPON":
-                renderWeapon(cost, name, text, attack, durability)
+        text = text.replace("<b>", "")
+        text = text.replace("</b>", "")
 
-            print("\n")
-            print("a", rarity.capitalize(), cardclass.capitalize(), cardtype.capitalize(),
-                  'from', c.longSetNames[set])
+        if cardtype == "MINION":
+            renderMinion(cost, name, text, attack, health, tribe)
+        elif cardtype == "SPELL":
+            renderSpell(cost, name, text)
+        elif cardtype == "WEAPON":
+            renderWeapon(cost, name, text, attack, durability)
 
-            print("Cost to craft:", getDustCost(rarity), "dust")
-            print("Flavor text:", flavor)
+        print("\n")
+        print("a", rarity.capitalize(), cardclass.capitalize(), cardtype.capitalize(),
+              'from', c.longSetNames[set])
 
-            selectChoice = input("What would you like to do with this card? (delete, edit, exit)\n>> ")
+        print("Cost to craft:", getDustCost(rarity), "dust")
+        print("Flavor text:", flavor)
 
-            if selectChoice == "delete":
-                deleteCard(card_id)
-            elif selectChoice == "edit":
-                editCard(card_id, cardtype)
-            elif selectChoice == "exit":
-                navigate()
+        selectChoice = input("What would you like to do with this card? (delete, edit, exit)\n>> ")
 
+        if selectChoice == "delete":
+            deleteCard(card_id)
+        elif selectChoice == "edit":
+            editCard(card_id, cardtype)
+        elif selectChoice == "exit":
+            navigate()
 
+def searchMultipleCards():
+    pass
 
 def deleteCard(card_id):
     delete = "DELETE FROM cards WHERE card_id = '" + card_id + "'"
