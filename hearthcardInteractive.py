@@ -19,6 +19,9 @@ def navigate():
         createCard()
     elif choice == "2":
         searchCard()
+    elif choice == "3":
+        cardStats()
+
 
 
 def searchCard():
@@ -382,6 +385,9 @@ def renderWeapon(cost, name, text, attack, durability):
     print("|______________________________|")
     print("| " + attack + " |" + "".center(22, " ") + "| " + durability + " |")
     print("|___|______________________|\\_/|")
+
+def cardStats():
+    print("placeholder")
 
 
 main()
