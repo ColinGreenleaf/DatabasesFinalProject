@@ -54,7 +54,6 @@ def searchSingleCard(name):
         flavor = card[10]
         tribe = card[11]
         durability = card[12]
-
         text = text.replace("<b>", "")
         text = text.replace("</b>", "")
 
@@ -204,10 +203,19 @@ def createCard():
 
     cardclass = input(
         "What class is the card for? (neutral, druid, hunter, mage, paladin, priest, rogue, shaman, warlock, warrior)\n>> ")
+    if cardclass not in classList:
+        print("That is not a valid class!")
+        return
     cardtype = input("What type of card is it? (minion, spell, weapon)\n>> ")
+    if cardtype not in typeList:
+        print("That is not a valid type!")
+        return
     name = input("What is the name of the card?\n>> ")
     cost = input("What is its mana cost?\n>> ")
     rarity = input("What is its rarity? (common, rare, epic, legendary)\n>> ")
+    if rarity not in rarityList:
+        print("That is not a valid rarity!")
+        return
     if cardtype.casefold() == "minion".casefold():
         attack = input("What is its attack?\n>> ")
         health = input("What is its health?\n>> ")
@@ -231,7 +239,7 @@ def createCard():
 
     id = getNextAvailableID()
 
-    card = [id, cardclass, cardtype, name, "CUSTOM", text, cost, attack, health, rarity, flavor, tribe, durability]
+    card = [id, cardclass.upper(), cardtype.upper(), name, "CUSTOM", text, cost, attack, health, rarity, flavor, tribe, durability]
     cur.execute("INSERT INTO cards VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", card)
 
     # if there are any mechanics in the text, add them to the card_mechanics table
@@ -243,12 +251,15 @@ def createCard():
     dustCostData = [id, "CRAFTING_NORMAL", getDustCost(rarity)]
     cur.execute("INSERT INTO dust_costs VALUES (?,?,?)", dustCostData)
 
-    # TODO: add play requirements to the play_requirements table
+    for keyword in c.keywords:
+        if keyword.casefold() in text.casefold():
+            cur.execute("INSERT INTO card_mechanics VALUES (?,?)", (id, keyword.upper().replace(" ", "_")))
 
     print("Card created successfully!")
 
     con.commit()
     con.close()
+    navigate()
 
 
 def getMechanics():
