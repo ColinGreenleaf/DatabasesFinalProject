@@ -395,12 +395,16 @@ def cardStats():
     con = sqlite3.connect("hearthcards.db")
     cur = con.cursor()
 
+    # list of numerical fields
     yAxisTwo = ["cost", "attack", "health", "durability"]
 
+    # list of all fields
     xAxis = ["cost", "attack", "health", "rarity", "type", "race", "durability", "card_set"]
+    # list of numerical fields
     xAxisTwo = ["cost", "attack", "health", "durability"]
 
-
+    # one variable plots count of cards by field
+    # two variable plots fieldX vs fieldY and count by density via color gradient
     numberAxis = input("Would you like to visualize one or two variables?  \n>> ")
 
     if numberAxis == "two":
@@ -433,7 +437,7 @@ def cardStats():
 
         df.columns = [choiceX,choiceY]
 
-
+        # data in .db file is stored as strings, convert to int for proper visualization
         df = df.astype({choiceX:'int'})
         df = df.astype({choiceY:'int'})
 
