@@ -1,5 +1,10 @@
+# %%
 import sqlite3
 import constants as c
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import seaborn as sns
 
 def main():
     print("Welcome to Hearthcard Interactive!")
@@ -387,7 +392,111 @@ def renderWeapon(cost, name, text, attack, durability):
     print("|___|______________________|\\_/|")
 
 def cardStats():
-    print("placeholder")
+    con = sqlite3.connect("hearthcards.db")
+    cur = con.cursor()
+
+    yAxisTwo = ["cost", "attack", "health", "durability"]
+
+    xAxis = ["cost", "attack", "health", "rarity", "type", "race", "durability", "card_set"]
+    xAxisTwo = ["cost", "attack", "health", "durability"]
+
+
+    numberAxis = input("Would you like to visualize one or two variables?  \n>> ")
+
+    if numberAxis == "two":
+
+
+        print("what field would you like to make the Y axis?")
+        print(yAxisTwo)
+        choiceY = input(">> ")
+
+        print("what field would you like to make the X axis?")
+        print(xAxisTwo)
+        choiceX = input(">> ")
+
+
+        if choiceY not in yAxisTwo or choiceX not in xAxisTwo:
+            print("That is not a valid field!")
+            return
+        else:
+            #execString = "SELECT avg("+choiceX+") as '"+choiceX+"', "+choiceY+", count("+choiceY+") as 'count' FROM cards WHERE "+choiceX+" is not '' and "+choiceY+" is not ''"
+            execString = "SELECT "+choiceX+", "+choiceY+" FROM cards WHERE "+choiceX+" is not '' and "+choiceY+" is not ''"
+
+        cards = cur.execute(execString)
+        cards = cards.fetchall()
+        con.close()
+        if len(cards) == 0:
+            print("No cards found!")
+            return
+
+        df = pd.DataFrame(cards)
+
+        df.columns = [choiceX,choiceY]
+
+
+        df = df.astype({choiceX:'int'})
+        df = df.astype({choiceY:'int'})
+
+
+
+        x = df[choiceX]
+        y = df[choiceY]
+
+
+        fig, ax = plt.subplots(figsize=(9, 6))
+
+        hexbin = ax.hexbin( x= x, y= y, gridsize = 20,
+                                cmap = 'Greens' 
+                        )                
+        ax.set_xlabel(choiceX)
+        ax.set_ylabel(choiceY)
+        cb = fig.colorbar(hexbin, ax=ax, label='Count of Cards')
+        ax.set_title('Hexbin chart, third variable as count of cards', size = 14)
+
+        plt.show()
+
+
+
+    elif numberAxis == "one":
+        print("what field would you like to make the X axis?")
+        print(xAxis)
+        choiceX = input(">> ")
+
+
+        if choiceX not in xAxis:
+            print("That is not a valid field!")
+            return
+        else:
+            execString = "SELECT "+choiceX+" FROM cards WHERE "+choiceX+" is not ''"
+        
+        cards = cur.execute(execString)
+        cards = cards.fetchall()
+        con.close()
+        if len(cards) == 0:
+            print("No cards found!")
+            return
+
+        df = pd.DataFrame(cards)
+        df.columns = [choiceX]
+
+
+        if choiceX in xAxisTwo:
+            df = df.astype({choiceX:'int'})
+        
+        df[choiceX].value_counts().plot(kind='bar')
+        plt.ylabel("Count", labelpad=14)
+        plt.title("Count of Cards by Field", y=1.02)
+        plt.show()
+
+
+
+
+
+
+
+    navigate()
 
 
 main()
+
+# %%
