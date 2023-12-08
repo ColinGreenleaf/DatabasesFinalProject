@@ -66,22 +66,21 @@ cur.execute(removeNonCollectibleMechanics)
 cur.execute(removeNonCollectiblePlayRequirements)
 cur.execute(removeExtraneousCrafting)
 
+# Drop columns hte, hteg, tat, fac since they are not used
+alterTableQuery = '''
+CREATE TABLE new_cards AS
+SELECT card_id, player_class, type, name, card_set, text, cost, attack, health, rarity, flavor, race, durability
+FROM cards;
+'''
 
-# drop columns  hte, hteg, tat, fac since they are not used
-dropHte = '''ALTER TABLE cards DROP COLUMN hte'''
-dropHteg = '''ALTER TABLE cards DROP COLUMN hteg'''
-dropTat = '''ALTER TABLE cards DROP COLUMN tat'''
-dropFac = '''ALTER TABLE cards DROP COLUMN fac'''
+# Execute the new table creation
+cur.execute(alterTableQuery)
 
-# drop column collectible since we have removed all non-collectible cards
-dropCol = '''ALTER TABLE cards DROP COLUMN collectible'''
+# Drop the old table
+cur.execute("DROP TABLE cards")
 
-# execute all column drops
-cur.execute(dropHte)
-cur.execute(dropHteg)
-cur.execute(dropTat)
-cur.execute(dropFac)
-cur.execute(dropCol)
+# Rename the new table to the original table name
+cur.execute("ALTER TABLE new_cards RENAME TO cards")
 
 # commit changes and close files
 con.commit()
